@@ -1,0 +1,507 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-handwriting: 'Caveat', cursive;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #F8F3EC;
+    color: #4A3D33;
+    overflow-x: hidden;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  .dark body {
+    background-color: #15110E;
+    color: #E6DAD0;
+  }
+
+  h1, h2, h3, h4, .font-serif-title {
+    font-family: var(--font-serif);
+  }
+
+  .font-handwriting {
+    font-family: var(--font-handwriting);
+  }
+}
+
+/* Glassmorphic Warm Overlay */
+.glass {
+  background: rgba(255, 248, 241, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(139, 94, 60, 0.12);
+}
+
+.glass-warm {
+  background: rgba(253, 246, 238, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(216, 138, 92, 0.2);
+}
+
+.dark .glass {
+  background: rgba(33, 27, 23, 0.82);
+  border-color: rgba(224, 122, 95, 0.2);
+}
+
+.dark .glass-warm {
+  background: rgba(39, 32, 27, 0.88);
+  border-color: rgba(216, 138, 92, 0.25);
+}
+
+/* Cozy Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F8F3EC;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D88A5C;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5C3A2E;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #15110E;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #5C3A2E;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #E07A5F;
+}
+
+/* Custom Soft Cozy Card Styling matching reference palette */
+.cozy-card {
+  background-color: #FFF8F1;
+  border: 1px solid #EEDFCF;
+  box-shadow: 0 4px 24px -4px rgba(92, 58, 46, 0.06);
+  border-radius: 1.25rem;
+  transition: all 0.25s ease-in-out;
+}
+
+.cozy-card:hover {
+  box-shadow: 0 8px 30px -4px rgba(92, 58, 46, 0.1);
+}
+
+.cozy-card-warm {
+  background-color: #FFF5EC;
+  border: 1px solid #EAD8C7;
+  box-shadow: 0 4px 22px -2px rgba(92, 58, 46, 0.08);
+  border-radius: 1.25rem;
+}
+
+.dark .cozy-card {
+  background-color: #211B17;
+  border-color: #382D25;
+  color: #EDE3DA;
+  box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.4);
+}
+
+.dark .cozy-card:hover {
+  box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.6);
+}
+
+.dark .cozy-card-warm {
+  background-color: #27201B;
+  border-color: #3E3229;
+  color: #EDE3DA;
+}
+
+.cozy-input {
+  background-color: #FFF8F1;
+  border: 1px solid #EAD8C7;
+  color: #3B281C;
+  border-radius: 0.875rem;
+  padding: 0.625rem 1rem;
+  transition: all 0.2s;
+}
+
+.dark .cozy-input {
+  background-color: #1B1613;
+  border-color: #382D25;
+  color: #F3EAE0;
+}
+
+/* Ensure inputs preceded by absolute icons have ample left padding so text never overlaps */
+.relative > svg + .cozy-input,
+.relative > svg ~ .cozy-input,
+.relative > .cozy-input:has(~ svg),
+.cozy-input.has-icon {
+  padding-left: 2.5rem !important;
+}
+
+.cozy-input:focus {
+  outline: none;
+  border-color: #D88A5C;
+  box-shadow: 0 0 0 3px rgba(216, 138, 92, 0.18);
+  background-color: #FFFFFF;
+}
+
+.dark .cozy-input:focus {
+  background-color: #15110E;
+  border-color: #E07A5F;
+  box-shadow: 0 0 0 3px rgba(224, 122, 95, 0.25);
+}
+
+.cozy-btn-primary {
+  background-color: #5C3A2E;
+  color: #FFF8F1;
+  font-weight: 600;
+  border-radius: 0.875rem;
+  padding: 0.625rem 1.25rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(92, 58, 46, 0.22);
+}
+
+.cozy-btn-primary:hover {
+  background-color: #4A2E24;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(92, 58, 46, 0.32);
+}
+
+.dark .cozy-btn-primary {
+  background-color: #E07A5F;
+  color: #15110E;
+  box-shadow: 0 4px 14px rgba(224, 122, 95, 0.25);
+}
+
+.dark .cozy-btn-primary:hover {
+  background-color: #F08C72;
+  box-shadow: 0 6px 18px rgba(224, 122, 95, 0.38);
+}
+
+.cozy-btn-secondary {
+  background-color: #FFF8F1;
+  color: #5C3A2E;
+  font-weight: 600;
+  border: 1px solid #EAD8C7;
+  border-radius: 0.875rem;
+  padding: 0.625rem 1.25rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(92, 58, 46, 0.04);
+}
+
+.cozy-btn-secondary:hover {
+  background-color: #FAF0E4;
+  color: #3B281C;
+  border-color: #D88A5C;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(216, 138, 92, 0.15);
+}
+
+.dark .cozy-btn-secondary {
+  background-color: #211B17;
+  color: #F3EAE0;
+  border-color: #382D25;
+}
+
+.dark .cozy-btn-secondary:hover {
+  background-color: #2A221C;
+  color: #FFFFFF;
+  border-color: #E07A5F;
+}
+
+/* Dark Mode Overrides for hardcoded cream background classes */
+.dark .bg-\[\#FAF6F0\] { background-color: #15110E !important; }
+.dark .bg-\[\#F8F3EC\] { background-color: #15110E !important; }
+.dark .bg-\[\#FFFBF7\] { background-color: #211B17 !important; }
+.dark .bg-\[\#FFF8F1\] { background-color: #211B17 !important; }
+.dark .bg-\[\#FFFDF7\] { background-color: #1B1613 !important; }
+.dark .bg-\[\#FAF8F5\] { background-color: #211B17 !important; }
+.dark .bg-\[\#FAF0E4\] { background-color: #27201B !important; }
+.dark .bg-\[\#FAF3EC\] { background-color: #241E1A !important; }
+.dark .bg-\[\#F5EFE6\] { background-color: #2A221C !important; }
+.dark .bg-\[\#FAF2E6\] { background-color: #29211B !important; }
+.dark .bg-\[\#FBEBE6\] { background-color: #2E1E1A !important; }
+.dark .bg-\[\#FFF5EC\] { background-color: #2B2019 !important; }
+.dark .bg-\[\#F5EBE1\] { background-color: #261E19 !important; }
+.dark .bg-\[\#F0E6DA\] { background-color: #2A211B !important; }
+.dark .bg-\[\#EAEFE6\] { background-color: #1E2B1A !important; }
+.dark .bg-\[\#E8F0E6\] { background-color: #1E2B1A !important; }
+.dark .bg-\[\#F4F7EF\] { background-color: #1E2B1A !important; }
+.dark .bg-\[\#E2D4C3\] { background-color: #382B21 !important; }
+.dark .bg-\[\#EFE6DC\] { background-color: #30261E !important; }
+.dark .bg-white { background-color: #1B1613 !important; }
+.dark .bg-white\/90 { background-color: rgba(27, 22, 19, 0.9) !important; }
+.dark .bg-white\/95 { background-color: rgba(27, 22, 19, 0.95) !important; }
+.dark .bg-\[\#FFFBF7\]\/90 { background-color: rgba(27, 22, 19, 0.92) !important; }
+.dark .bg-\[\#FAF6F0\]\/90 { background-color: rgba(21, 17, 14, 0.92) !important; }
+
+/* Dark Mode Hover & Focus State Overrides */
+.dark .hover\:bg-\[\#F5EFE6\]:hover { background-color: #2A221C !important; }
+.dark .hover\:bg-\[\#FAF6F0\]:hover { background-color: #241E1A !important; }
+.dark .hover\:bg-\[\#FFF5EC\]:hover { background-color: #2B2019 !important; }
+.dark .hover\:bg-\[\#FFF8F1\]:hover { background-color: #211B17 !important; }
+.dark .hover\:bg-white:hover { background-color: #2A221C !important; }
+.dark .hover\:bg-\[\#8B5E3C\]:hover { background-color: #8B5E3C !important; color: #FFFBF7 !important; }
+.dark .focus\:bg-white:focus { background-color: #15110E !important; }
+
+/* Dark Mode Text Color Overrides for High Contrast Visibility */
+.dark .text-\[\#3B281C\], .dark [class*="text-[#3B281C]"] { color: #FFFBF7 !important; }
+.dark .text-\[\#3E2723\], .dark [class*="text-[#3E2723]"] { color: #FFFBF7 !important; }
+.dark .text-\[\#1C120C\], .dark [class*="text-[#1C120C]"] { color: #FFFBF7 !important; }
+.dark .text-\[\#281810\], .dark [class*="text-[#281810]"] { color: #FFFBF7 !important; }
+.dark .text-\[\#3C2415\], .dark [class*="text-[#3C2415]"] { color: #FFFBF7 !important; }
+.dark .text-\[\#23150D\], .dark [class*="text-[#23150D]"] { color: #FFFBF7 !important; }
+.dark .text-\[\#40281B\], .dark [class*="text-[#40281B]"] { color: #FFFBF7 !important; }
+.dark .text-\[\#2C1D15\], .dark [class*="text-[#2C1D15]"] { color: #FFFBF7 !important; }
+.dark .text-\[\#3D281D\], .dark [class*="text-[#3D281D]"] { color: #FFFBF7 !important; }
+
+.dark .text-\[\#5C3D2E\], .dark [class*="text-[#5C3D2E]"] { color: #F7EBE1 !important; }
+.dark .text-\[\#5C3A2E\], .dark [class*="text-[#5C3A2E]"] { color: #F7EBE1 !important; }
+.dark .text-\[\#5D4037\], .dark [class*="text-[#5D4037]"] { color: #F7EBE1 !important; }
+.dark .text-\[\#4A3D33\], .dark [class*="text-[#4A3D33]"] { color: #F7EBE1 !important; }
+.dark .text-\[\#4A3B32\], .dark [class*="text-[#4A3B32]"] { color: #F7EBE1 !important; }
+
+.dark .text-\[\#705D52\], .dark [class*="text-[#705D52]"] { color: #EAD6C5 !important; }
+.dark .text-\[\#795548\], .dark [class*="text-[#795548]"] { color: #EAD6C5 !important; }
+.dark .text-\[\#8C7667\], .dark [class*="text-[#8C7667]"] { color: #EAD6C5 !important; }
+.dark .text-\[\#8D6E63\], .dark [class*="text-[#8D6E63]"] { color: #EAD6C5 !important; }
+.dark .text-\[\#A08370\], .dark [class*="text-[#A08370]"] { color: #EAD6C5 !important; }
+.dark .text-\[\#C4B09B\], .dark [class*="text-[#C4B09B]"] { color: #D8C4B2 !important; }
+
+.dark .text-\[\#8B5E3C\], .dark [class*="text-[#8B5E3C]"] { color: #F4B082 !important; }
+.dark .text-\[\#D88A5C\], .dark [class*="text-[#D88A5C]"] { color: #FF9E79 !important; }
+.dark .text-\[\#D4A373\], .dark [class*="text-[#D4A373]"] { color: #F5C799 !important; }
+.dark .text-\[\#E07A5F\], .dark [class*="text-[#E07A5F]"] { color: #FF9575 !important; }
+.dark .text-\[\#E29578\], .dark [class*="text-[#E29578]"] { color: #FFA88B !important; }
+.dark .text-\[\#9E6D38\], .dark [class*="text-[#9E6D38]"] { color: #F8C387 !important; }
+.dark .text-\[\#B8543B\], .dark [class*="text-[#B8543B]"] { color: #FF9B82 !important; }
+.dark .text-\[\#4F5D3D\], .dark [class*="text-[#4F5D3D]"] { color: #C5E1B4 !important; }
+.dark .text-\[\#2D5A27\], .dark [class*="text-[#2D5A27]"] { color: #A8E8A0 !important; }
+
+/* Dark Mode Hover Text Overrides */
+.dark .hover\:text-\[\#3B281C\]:hover, .dark [class*="hover:text-[#3B281C]"]:hover { color: #FFFBF7 !important; }
+.dark .hover\:text-\[\#3E2723\]:hover, .dark [class*="hover:text-[#3E2723]"]:hover { color: #FFFBF7 !important; }
+.dark .hover\:text-\[\#5C3D2E\]:hover, .dark [class*="hover:text-[#5C3D2E]"]:hover { color: #F7EBE1 !important; }
+.dark .hover\:text-\[\#D88A5C\]:hover, .dark [class*="hover:text-[#D88A5C]"]:hover { color: #FF9E79 !important; }
+
+/* Dark Mode Border Overrides */
+.dark .border-\[\#E6DCCD\] { border-color: #382D25 !important; }
+.dark .border-\[\#EAD8C7\] { border-color: #382D25 !important; }
+.dark .border-\[\#EFE6DC\] { border-color: #332A22 !important; }
+.dark .border-\[\#EEDFCF\] { border-color: #382D25 !important; }
+.dark .border-\[\#E6DED5\] { border-color: #382D25 !important; }
+.dark .border-\[\#E8DDD0\] { border-color: #382D25 !important; }
+.dark .border-\[\#D2DEC8\] { border-color: #2F422A !important; }
+.dark .border-\[\#C8E0C4\] { border-color: #2F422A !important; }
+.dark .border-\[\#C5D8B5\] { border-color: #2F422A !important; }
+.dark .border-\[\#F4CFC5\] { border-color: #4A2820 !important; }
+.dark .border-\[\#F0DCBE\] { border-color: #423222 !important; }
+.dark .border-\[\#E2CEBC\] { border-color: #3E3228 !important; }
+
+/* Dark Mode Input & Placeholder Visibility */
+.dark ::placeholder {
+  color: #A39082 !important;
+  opacity: 0.85;
+}
+.dark input[type="date"] {
+  color-scheme: dark;
+}
+
+/* Dark Mode SVG Fill & Stroke Overrides */
+.dark .fill-\[\#8C7667\] { fill: #B5A192 !important; }
+.dark .fill-\[\#705D52\] { fill: #C5B4A5 !important; }
+.dark .fill-\[\#3B281C\] { fill: #F3EAE0 !important; }
+.dark .fill-\[\#5C3D2E\] { fill: #EAD3C1 !important; }
+.dark .fill-\[\#3E2723\] { fill: #F5ECE3 !important; }
+.dark .fill-\[\#5D4037\] { fill: #E8D5C8 !important; }
+.dark .stroke-\[\#EFE6DC\] { stroke: #382D25 !important; }
+.dark .stroke-\[\#F5EFE6\] { stroke: #2E251E !important; }
+.dark .stroke-\[\#E6DCCD\] { stroke: #382D25 !important; }
+.dark .stroke-\[\#EAD8C7\] { stroke: #382D25 !important; }
+.dark .stroke-\[\#E6DED5\] { stroke: #382D25 !important; }
+
+/* Cozy BloomBot Subtle Chat & Maple Leaf Patterns */
+.bloombot-chat-pattern {
+  background-color: #FFF8F1;
+  background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23D88A5C' fill-opacity='0.08' fill-rule='evenodd'%3E%3C!-- Tiny Maple Leaf 1 --%3E%3Cpath d='M30 18l2 5 6-3-2 6 7 2-6 5 4 6-6-2-2 7-3-5-3 5-2-7-6 2 4-6-6-5 7-2-2-6 6 3z M30 39v8' stroke='%23D88A5C' stroke-opacity='0.08' stroke-width='1.2'/%3E%3C!-- Tiny Amber Leaf 2 --%3E%3Cpath d='M90 70l2 4 5-2-2 5 6 1-5 4 3 5-5-1-2 6-2-4-2 4-2-6-5 1 3-5-5-4 6-1-2-5 5 2z M90 87v6' fill='%23D4A373' fill-opacity='0.08'/%3E%3C!-- Tiny Paw/Flower --%3E%3Cpath d='M85 25a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm-15 50a3 3 0 1 1 0 6 3 3 0 0 1 0-6z' fill='%235C3A2E' fill-opacity='0.06'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Global Soft Cream Maple Leaf Background Pattern */
+.maple-leaf-pattern {
+  background-color: #FDF9F3;
+  background-image: url("data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill-rule='evenodd'%3E%3C!-- Maple Leaf Burnt Orange --%3E%3Cg fill='%23D88A5C' fill-opacity='0.08'%3E%3Cpath d='M45 22l2.5 7.5 8.5-3.5-3 8.5 9 2.5-8 6.5 5 7.5-8.5-2.5-2.5 9-3.5-7-3.5 7-2.5-9-8.5 2.5 5-7.5-8-6.5 9-2.5-3-8.5 8.5 3.5z'/%3E%3Cpath d='M45 53v12' stroke='%23D88A5C' stroke-opacity='0.08' stroke-width='1.5'/%3E%3C/g%3E%3C!-- Maple Leaf Soft Amber --%3E%3Cg fill='%23E29578' fill-opacity='0.07'%3E%3Cpath d='M135 110l2 6 7-3-2.5 7 7 2-6.5 5 4 6-7-2-2 7-3-5.5-3 5.5-2-7-7 2 4-6-6.5-5 7-2-2.5-7 7 3z'/%3E%3Cpath d='M135 135v10' stroke='%23E29578' stroke-opacity='0.07' stroke-width='1.5'/%3E%3C/g%3E%3C!-- Maple Leaf Muted Gold --%3E%3Cg fill='%23D4A373' fill-opacity='0.06'%3E%3Cpath d='M140 35l1.8 5.4 6.2-2.7-2.2 6.3 6.5 1.8-5.8 4.7 3.6 5.4-6.2-1.8-1.8 6.5-2.5-5.1-2.5 5.1-1.8-6.5-6.2 1.8 3.6-5.4-5.8-4.7 6.5-1.8-2.2-6.3 6.2 2.7z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Dark Mode Pattern Background Overrides (Translucent Maple Leaf Pattern) */
+.dark .bloombot-chat-pattern {
+  background-color: #181310 !important;
+  background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23FF9575' fill-opacity='0.12' fill-rule='evenodd'%3E%3Cpath d='M30 18l2 5 6-3-2 6 7 2-6 5 4 6-6-2-2 7-3-5-3 5-2-7-6 2 4-6-6-5 7-2-2-6 6 3z M30 39v8' stroke='%23FF9575' stroke-opacity='0.12' stroke-width='1'/%3E%3Cpath d='M90 70l2 4 5-2-2 5 6 1-5 4 3 5-5-1-2 6-2-4-2 4-2-6-5 1 3-5-5-4 6-1-2-5 5 2z M90 87v6' fill='%23FF9E79' fill-opacity='0.11'/%3E%3Cpath d='M85 25a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm-15 50a3 3 0 1 1 0 6 3 3 0 0 1 0-6z' fill='%23FF9575' fill-opacity='0.09'/%3E%3C/g%3E%3C/svg%3E") !important;
+}
+
+.dark .maple-leaf-pattern {
+  background-color: #15110E !important;
+  background-image: url("data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23FF9575' fill-opacity='0.12'%3E%3Cpath d='M45 22l2.5 7.5 8.5-3.5-3 8.5 9 2.5-8 6.5 5 7.5-8.5-2.5-2.5 9-3.5-7-3.5 7-2.5-9-8.5 2.5 5-7.5-8-6.5 9-2.5-3-8.5 8.5 3.5z'/%3E%3Cpath d='M45 53v12' stroke='%23FF9575' stroke-opacity='0.12' stroke-width='1.5'/%3E%3C/g%3E%3Cg fill='%23FFA88B' fill-opacity='0.10'%3E%3Cpath d='M135 110l2 6 7-3-2.5 7 7 2-6.5 5 4 6-7-2-2 7-3-5.5-3 5.5-2-7-7 2 4-6-6.5-5 7-2-2.5-7 7 3z'/%3E%3Cpath d='M135 135v10' stroke='%23FFA88B' stroke-opacity='0.10' stroke-width='1.5'/%3E%3C/g%3E%3Cg fill='%23F5C799' fill-opacity='0.09'%3E%3Cpath d='M140 35l1.8 5.4 6.2-2.7-2.2 6.3 6.5 1.8-5.8 4.7 3.6 5.4-6.2-1.8-1.8 6.5-2.5-5.1-2.5 5.1-1.8-6.5-6.2 1.8 3.6-5.4-5.8-4.7 6.5-1.8-2.2-6.3 6.2 2.7z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") !important;
+}
+
+/* Dark Mode Leaf & Branch SVG Visibility Overrides */
+.dark svg path[stroke="#5C3A2E"],
+.dark svg path[stroke="#4A2E24"],
+.dark svg path[stroke="#8B3A22"],
+.dark svg path[stroke="#3B281C"],
+.dark svg path[stroke="#A0522D"],
+.dark svg path[stroke="#5D4037"],
+.dark svg line[stroke="#5C3A2E"],
+.dark svg line[stroke="#3B281C"] {
+  stroke: #C28E69 !important;
+}
+
+.dark svg path[fill="#8B5E3C"] {
+  fill: #D88A5C !important;
+}
+
+.dark svg path[fill="#C46E52"] {
+  fill: #FF8A65 !important;
+}
+
+.dark svg path[fill="#E07A5F"] {
+  fill: #FF9575 !important;
+}
+
+.dark svg path[fill="#D88A5C"] {
+  fill: #FF9E79 !important;
+}
+
+.dark svg path[fill="#D4A373"] {
+  fill: #F5C799 !important;
+}
+
+.dark svg path[fill="#E29578"] {
+  fill: #FFA88B !important;
+}
+
+/* ANIMATED FLOATING & FALLING MAPLE LEAVES KEYFRAMES */
+@keyframes mapleFallAndSway1 {
+  0% {
+    transform: translate3d(0, -40px, 0) rotate(0deg) scale(0.9);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.85;
+  }
+  35% {
+    transform: translate3d(35px, 200px, 0) rotate(70deg) scale(1.02);
+  }
+  65% {
+    transform: translate3d(-30px, 420px, 0) rotate(170deg) scale(0.95);
+    opacity: 0.8;
+  }
+  85% {
+    opacity: 0.45;
+  }
+  100% {
+    transform: translate3d(20px, 640px, 0) rotate(280deg) scale(0.85);
+    opacity: 0;
+  }
+}
+
+@keyframes mapleFallAndSway2 {
+  0% {
+    transform: translate3d(0, -30px, 0) rotate(-30deg) scale(1.05);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.8;
+  }
+  40% {
+    transform: translate3d(-40px, 220px, 0) rotate(-110deg) scale(0.98);
+  }
+  70% {
+    transform: translate3d(30px, 450px, 0) rotate(-190deg) scale(0.9);
+    opacity: 0.65;
+  }
+  88% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate3d(-15px, 620px, 0) rotate(-280deg) scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes mapleFallAndSway3 {
+  0% {
+    transform: translate3d(0, -50px, 0) rotate(20deg) scale(0.85);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  35% {
+    transform: translate3d(-25px, 190px, 0) rotate(90deg) scale(1);
+  }
+  65% {
+    transform: translate3d(45px, 410px, 0) rotate(190deg) scale(0.92);
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.25;
+  }
+  100% {
+    transform: translate3d(-20px, 660px, 0) rotate(320deg) scale(0.75);
+    opacity: 0;
+  }
+}
+
+@keyframes mapleFallAndSway4 {
+  0% {
+    transform: translate3d(0, -35px, 0) rotate(45deg) scale(0.95);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.75;
+  }
+  50% {
+    transform: translate3d(50px, 300px, 0) rotate(140deg) scale(1.08);
+    opacity: 0.85;
+  }
+  80% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate3d(-10px, 600px, 0) rotate(240deg) scale(0.88);
+    opacity: 0;
+  }
+}
+
+.animate-maple-fall-1 {
+  animation: mapleFallAndSway1 linear infinite;
+  will-change: transform, opacity;
+}
+
+.animate-maple-fall-2 {
+  animation: mapleFallAndSway2 linear infinite;
+  will-change: transform, opacity;
+}
+
+.animate-maple-fall-3 {
+  animation: mapleFallAndSway3 linear infinite;
+  will-change: transform, opacity;
+}
+
+.animate-maple-fall-4 {
+  animation: mapleFallAndSway4 linear infinite;
+  will-change: transform, opacity;
+}
+
+
+
