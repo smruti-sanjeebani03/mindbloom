@@ -9,9 +9,12 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-mindbloom-wellness-app-secret-key-2026')
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
-DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() in ['true', '1', 'yes']
+if not SECRET_KEY:
+    raise ValueError("DJANGO_SECRET_KEY environment variable is not set")
+
+DEBUG = os.getenv('DJANGO_DEBUG', 'False').lower() in ['true', '1', 'yes']
 
 ALLOWED_HOSTS = ['*']
 
@@ -72,8 +75,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'mindbloom_backend.wsgi.application'
 
 # Database configuration - PostgreSQL
-if os.getenv('DATABASE_URL'):
-    import dj_database_url
+
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
