@@ -1,0 +1,6 @@
+{
+  "name": "MindBloom",
+  "description": "An AI-powered emotional wellness platform inspired by a cozy journal atmosphere.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
