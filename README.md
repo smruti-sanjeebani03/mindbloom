@@ -122,11 +122,7 @@ Open `.env` and fill in your configuration keys:
 
 ---
 
-## 🔒 Default Admin Credentials (Demo)
 
-- **Admin Login**: Sign in via `/admin/login` or standard login.
-- **Admin Email**: `admin@mindbloom.app`
-- **Admin Password**: `admin123`
 
 ---
 
