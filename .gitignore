@@ -7,3 +7,15 @@ coverage/
 .env
 !.env.example
 
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+.venv-1/
+venv/
+
+# Django
+staticfiles/
