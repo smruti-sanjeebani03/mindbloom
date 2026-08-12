@@ -3,6 +3,10 @@
     {
       "source": "/api/:path*",
       "destination": "https://mindbloom-kt3e.onrender.com/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
