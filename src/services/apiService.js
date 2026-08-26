@@ -2,13 +2,60 @@
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("mindbloom_access_token");
-  const headers = { "Content-Type": "application/json" };
+
+  const headers = {
+    "Content-Type": "application/json",
+  };
 
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
   return headers;
+};
+
+
+const refreshAccessToken = async () => {
+  const refreshToken = localStorage.getItem(
+    "mindbloom_refresh_token"
+  );
+
+  if (!refreshToken) {
+    return null;
+  }
+
+  try {
+    const response = await fetch("/api/token/refresh/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        refresh: refreshToken,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.access) {
+      console.warn("JWT refresh failed:", data);
+
+      apiService.clearTokens();
+      return null;
+    }
+
+    localStorage.setItem(
+      "mindbloom_access_token",
+      data.access
+    );
+
+    return data.access;
+  } catch (error) {
+    console.error("JWT refresh error:", error);
+
+    apiService.clearTokens();
+    return null;
+  }
 };
 
 export const apiService = {
@@ -98,50 +145,42 @@ export const apiService = {
       );
 
       const data = await response.json();
+      const payload = data?.data || data;
+      const user = payload?.user || data?.user;
 
-      if (response.ok && data.access_token) {
+      if (response.ok && payload?.access_token && user) {
         apiService.setTokens(
-          data.access_token,
-          data.refresh_token
+          payload.access_token,
+          payload.refresh_token
         );
 
-       const userData = {
-  email: data.user.email,
-  name:
-    data.user.full_name ||
-    data.user.first_name ||
-    email.split("@")[0],
-
-  bio: data.user.bio || "",
-    date_joined: data.user.date_joined || null,
-
-  isLoggedIn: true,
-
-  chat_count:
-    data.user.chat_count || 0,
-
-  subscription_type:
-    data.user.subscription_type || "free",
-
-  subscription_status:
-    data.user.subscription_status || "inactive",
-
-  subscription_expiry:
-    data.user.subscription_expiry || null,
-
-  is_staff:
-    data.user.is_staff || false,
-
-  is_superuser:
-    data.user.is_superuser || false,
-};
+        const userData = {
+          email: user.email || email,
+          name:
+            user.full_name ||
+            user.first_name ||
+            email.split("@")[0],
+          bio: user.bio || "",
+          date_joined: user.date_joined || null,
+          isLoggedIn: true,
+          chat_count: user.chat_count || 0,
+          subscription_type:
+            user.subscription_type || "free",
+          subscription_status:
+            user.subscription_status || "inactive",
+          subscription_expiry:
+            user.subscription_expiry || null,
+          is_staff: user.is_staff || false,
+          is_superuser: user.is_superuser || false,
+          picture: user.picture || "",
+        };
 
         apiService.updateUser(userData);
 
         return {
           success: true,
           user: userData,
-          message: data.message,
+          message: data.message || payload.message,
         };
       }
 
@@ -150,7 +189,9 @@ export const apiService = {
         message:
           data.message ||
           data.detail ||
+          payload?.message ||
           "Authentication failed.",
+        errors: data.errors || payload?.errors || {},
       };
     } catch (error) {
       console.error("Login API Error:", error);
@@ -162,11 +203,11 @@ export const apiService = {
       };
     }
   },
-
   registerAccount: async ({
     email,
     name,
     password,
+    confirmPassword = password,
   }) => {
     try {
       const response = await fetch(
@@ -180,44 +221,50 @@ export const apiService = {
             email,
             full_name: name,
             password,
+            confirm_password: confirmPassword,
           }),
         }
       );
 
-      const data = await response.json();
+      let data = {};
+
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
+      }
 
       if (response.ok) {
         return {
           success: true,
-          message: "Account created successfully.",
+          message:
+            data.message ||
+            "Account created successfully.",
         };
       }
 
       let errorMsg =
-        data.message || "Registration failed.";
+        data.message ||
+        data.detail ||
+        "Registration failed.";
 
-      if (data.errors) {
-        if (typeof data.errors === "string") {
-          errorMsg = data.errors;
-        } else if (
-          typeof data.errors === "object"
-        ) {
-          const firstKey =
-            Object.keys(data.errors)[0];
+      if (data.errors && typeof data.errors === "object") {
+        const firstKey = Object.keys(data.errors)[0];
 
-          if (firstKey) {
-            errorMsg = Array.isArray(
-              data.errors[firstKey]
-            )
-              ? data.errors[firstKey][0]
-              : data.errors[firstKey];
-          }
+        if (firstKey) {
+          const fieldError = data.errors[firstKey];
+          errorMsg = Array.isArray(fieldError)
+            ? fieldError[0]
+            : String(fieldError);
         }
+      } else if (typeof data.errors === "string") {
+        errorMsg = data.errors;
       }
 
       return {
         success: false,
         message: errorMsg,
+        errors: data.errors || {},
       };
     } catch (error) {
       console.error("Register API Error:", error);
@@ -229,7 +276,6 @@ export const apiService = {
       };
     }
   },
-
   authenticateGoogleToken: async (
   idToken,
   adminCode = ""
@@ -750,14 +796,26 @@ updateUserProfileBackend: async (updates) => {
     }
   },
 
-// --- Moods ---
-fetchMoodsFromBackend: async (filterMood = "", filterDate = "") => {
+// =========================================================
+// MOODS
+// =========================================================
+
+fetchMoodsFromBackend: async (
+  filterMood = "",
+  filterDate = ""
+) => {
   try {
     let url = "/api/moods/";
+
     const params = new URLSearchParams();
 
-    if (filterMood) params.append("mood", filterMood);
-    if (filterDate) params.append("date", filterDate);
+    if (filterMood) {
+      params.append("mood", filterMood);
+    }
+
+    if (filterDate) {
+      params.append("date", filterDate);
+    }
 
     if (params.toString()) {
       url += `?${params.toString()}`;
@@ -770,6 +828,7 @@ fetchMoodsFromBackend: async (filterMood = "", filterDate = "") => {
     const data = await response.json();
 
     if (!response.ok) {
+      console.error("Failed to fetch moods:", data);
       return [];
     }
 
@@ -802,19 +861,31 @@ fetchMoodsFromBackend: async (filterMood = "", filterDate = "") => {
 
       return {
         ...entry,
+
+        // Backend: "Happy"
+        // Frontend: "happy"
         mood: entry.mood
-          ? String(entry.mood).trim().toLowerCase()
+          ? String(entry.mood)
+              .trim()
+              .toLowerCase()
           : "",
+
+        // Always expose score as a number
         score:
           entry.score !== undefined &&
           entry.score !== null
             ? Number(entry.score)
             : null,
+
         date: localDate,
       };
     });
-  } catch (err) {
-    console.error("Error fetching moods:", err);
+  } catch (error) {
+    console.error(
+      "Error fetching moods:",
+      error
+    );
+
     return [];
   }
 },
@@ -825,15 +896,48 @@ recordMoodBackend: async (
   note = ""
 ) => {
   try {
-    const response = await fetch("/api/moods/", {
-      method: "POST",
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
-        mood,
-        score: Number(score),
-        note: note || "",
-      }),
-    });
+    const moodMap = {
+      happy: "Happy",
+      calm: "Calm",
+      excited: "Excited",
+      grateful: "Grateful",
+      neutral: "Neutral",
+      tired: "Tired",
+      stressed: "Stressed",
+      anxious: "Anxious",
+      sad: "Sad",
+      angry: "Angry",
+    };
+
+    const backendMood =
+      moodMap[String(mood).toLowerCase()] || mood;
+
+    const numericScore = Number(score);
+
+    if (
+      !Number.isFinite(numericScore) ||
+      numericScore < 1 ||
+      numericScore > 10
+    ) {
+      return {
+        success: false,
+        message:
+          "Mood score must be between 1 and 10.",
+      };
+    }
+
+    const response = await fetch(
+      "/api/moods/",
+      {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          mood: backendMood,
+          score: numericScore,
+          note: note || "",
+        }),
+      }
+    );
 
     const data = await response.json();
 
@@ -852,9 +956,13 @@ recordMoodBackend: async (
       message:
         data.message ||
         "Failed to record mood entry.",
+      errors: data.errors || {},
     };
-  } catch (err) {
-    console.error("Error recording mood:", err);
+  } catch (error) {
+    console.error(
+      "Error recording mood:",
+      error
+    );
 
     return {
       success: false,
@@ -871,18 +979,45 @@ updateMoodBackend: async (
   note = ""
 ) => {
   try {
+    const moodMap = {
+      happy: "Happy",
+      calm: "Calm",
+      excited: "Excited",
+      grateful: "Grateful",
+      neutral: "Neutral",
+      tired: "Tired",
+      stressed: "Stressed",
+      anxious: "Anxious",
+      sad: "Sad",
+      angry: "Angry",
+    };
+
+    const backendMood =
+      moodMap[String(mood).toLowerCase()] || mood;
+
+    const numericScore = Number(score);
+
+    if (
+      !Number.isFinite(numericScore) ||
+      numericScore < 1 ||
+      numericScore > 10
+    ) {
+      return {
+        success: false,
+        message:
+          "Mood score must be between 1 and 10.",
+      };
+    }
+
     const response = await fetch(
       `/api/moods/${id}/`,
       {
         method: "PUT",
         headers: getAuthHeaders(),
         body: JSON.stringify({
-          mood: mood
-            ? mood.charAt(0).toUpperCase() +
-              mood.slice(1).toLowerCase()
-            : mood,
-          score: Number(score),
-          note: note || ""
+          mood: backendMood,
+          score: numericScore,
+          note: note || "",
         }),
       }
     );
@@ -906,9 +1041,11 @@ updateMoodBackend: async (
         "Failed to update mood entry.",
       errors: data.errors || {},
     };
-
-  } catch (err) {
-    console.error("Error updating mood:", err);
+  } catch (error) {
+    console.error(
+      "Error updating mood:",
+      error
+    );
 
     return {
       success: false,
@@ -928,19 +1065,37 @@ deleteMoodBackend: async (id) => {
       }
     );
 
-    if (response.ok || response.status === 204) {
+    if (
+      response.ok ||
+      response.status === 204
+    ) {
       return {
         success: true,
-        message: "Mood deleted successfully.",
+        message:
+          "Mood deleted successfully.",
       };
+    }
+
+    let data = {};
+
+    try {
+      data = await response.json();
+    } catch {
+      // Response may not contain JSON
     }
 
     return {
       success: false,
-      message: "Failed to delete mood entry.",
+      message:
+        data.message ||
+        "Failed to delete mood entry.",
+      errors: data.errors || {},
     };
-  } catch (err) {
-    console.error("Error deleting mood:", err);
+  } catch (error) {
+    console.error(
+      "Error deleting mood:",
+      error
+    );
 
     return {
       success: false,
@@ -1010,17 +1165,16 @@ fetchMoodAnalyticsBackend: async () => {
 ) => {
   try {
     const response = await fetch(
-      "/api/chat/",
-      {
-        method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          message: messageText,
-          history,
-        }),
-      }
-    );
-
+  "/api/chat/",
+  {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      message: messageText,
+      history,
+    }),
+  }
+);
     const data = await response.json();
 
     // ==============================
@@ -1147,26 +1301,32 @@ fetchMoodAnalyticsBackend: async () => {
             "Failed to submit feedback.",
         };
       } catch (error) {
-        return {
-          success: false,
-          message:
-            "Network error while submitting feedback.",
-        };
-      }
+  console.error("BloomBot feedback API error:", error);
+
+  return {
+    success: false,
+    message:
+      error?.message ||
+      "Network error while submitting feedback.",
+  };
+}
     },
 retryBloomBotResponseBackend: async (payload) => {
   try {
-    const response = await fetch("/api/chat/retry/", {
-      method: "POST",
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
-        message: payload?.message || "",
-        history: Array.isArray(payload?.history)
-          ? payload.history
-          : [],
-        previous_response: payload?.previous_response || "",
-      }),
-    });
+    const response = await fetch(
+      "/api/chat/retry/",
+      {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          message: payload?.message || "",
+          history: Array.isArray(payload?.history)
+            ? payload.history
+            : [],
+          previous_response: payload?.previous_response || "",
+        }),
+      }
+    );
 
     const data = await response.json();
 
@@ -1669,6 +1829,36 @@ retryBloomBotResponseBackend: async (payload) => {
   // BLOOM STORIES
   // =========================================================
 
+  getAdminStories: async () => {
+  try {
+    const response = await fetch(
+      "/api/admin/stories/",
+      {
+        method: "GET",
+        headers: getAuthHeaders(),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+          "Failed to load admin stories."
+      );
+    }
+
+    return data;
+  } catch (error) {
+    console.error(
+      "Admin stories fetch error:",
+      error
+    );
+
+    throw error;
+  }
+},
+
   fetchStoriesFromBackend: async (
     category = "all",
     searchQuery = ""
@@ -1733,6 +1923,35 @@ retryBloomBotResponseBackend: async (payload) => {
       return [];
     }
   },
+
+  fetchAdminStoriesBackend: async () => {
+  try {
+    const response = await authenticatedFetch("/api/admin/stories/");
+    const data = await response.json();
+
+    if (response.ok) {
+      const storiesList = Array.isArray(data.data)
+        ? data.data
+        : (Array.isArray(data) ? data : (data.results || []));
+
+      return {
+        success: true,
+        summary: data.summary,
+        data: storiesList
+      };
+    }
+
+    return {
+      success: false,
+      message: data.message || "Failed to fetch stories."
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: "Network error loading stories."
+    };
+  }
+},
 
   createStoryBackend: async (
     storyData
@@ -2587,6 +2806,72 @@ deleteAdminQuoteBackend: async (id) => {
     }
   },
 
+  suspendUserBackend: async (id) => {
+  try {
+    const response = await fetch(
+      `/api/admin/users/${id}/suspend/`,
+      {
+        method: "POST",
+        headers: getAuthHeaders(),
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      return {
+        success: true,
+        message: data.message,
+      };
+    }
+
+    return {
+      success: false,
+      message:
+        data.message ||
+        "Failed to suspend user.",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Network error.",
+    };
+  }
+},
+
+reactivateUserBackend: async (id) => {
+  try {
+    const response = await fetch(
+      `/api/admin/users/${id}/reactivate/`,
+      {
+        method: "POST",
+        headers: getAuthHeaders(),
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      return {
+        success: true,
+        message: data.message,
+      };
+    }
+
+    return {
+      success: false,
+      message:
+        data.message ||
+        "Failed to reactivate user.",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Network error.",
+    };
+  }
+},
+
   getAdminUsers: async () => {
     try {
       const response =
@@ -2889,21 +3174,6 @@ deleteAdminQuoteBackend: async (id) => {
   // COMPATIBILITY HELPERS
   // =========================================================
 
-  getMoods: async () => {
-    return apiService.fetchMoodsFromBackend();
-  },
-
-  addMood: async (
-    mood,
-    score,
-    tags,
-    note
-  ) => {
-    return apiService.recordMoodBackend(
-      mood,
-      note
-    );
-  },
 
   deleteJournal: async (
     id

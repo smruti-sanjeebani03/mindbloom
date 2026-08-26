@@ -8,6 +8,8 @@ from .serializers import JournalSerializer
 from .permissions import IsOwnerOnly
 
 
+
+
 class JournalListCreateView(APIView):
     """
     Handles listing all journal entries for the authenticated user (GET)

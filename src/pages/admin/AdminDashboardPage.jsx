@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 
 import {
   Users,
-  MessageSquare,
   BookOpen,
   Smile,
   Leaf,
@@ -24,7 +23,6 @@ export const AdminDashboardPage = () => {
 
   const [users, setUsers] = useState([]);
   const [journals, setJournals] = useState([]);
-  const [conversations, setConversations] = useState([]);
   const [moods, setMoods] = useState([]);
   const [reflections, setReflections] = useState([]);
   const [quotes, setQuotes] = useState([]);
@@ -110,7 +108,6 @@ export const AdminDashboardPage = () => {
 
             apiService.getJournals(),
 
-            apiService.getConversations(),
 
             apiService.getMoods(),
 
@@ -180,15 +177,16 @@ export const AdminDashboardPage = () => {
         }
 
 
+
         // -----------------------------------------------------
-        // Conversations
+        // Moods
         // -----------------------------------------------------
 
         if (
           results[2]?.status === "fulfilled"
         ) {
 
-          setConversations(
+          setMoods(
             toArray(
               results[2].value
             )
@@ -197,34 +195,8 @@ export const AdminDashboardPage = () => {
         } else {
 
           console.error(
-            "Admin conversations fetch failed:",
-            results[2]?.reason
-          );
-
-          setConversations([]);
-
-        }
-
-
-        // -----------------------------------------------------
-        // Moods
-        // -----------------------------------------------------
-
-        if (
-          results[3]?.status === "fulfilled"
-        ) {
-
-          setMoods(
-            toArray(
-              results[3].value
-            )
-          );
-
-        } else {
-
-          console.error(
             "Admin moods fetch failed:",
-            results[3]?.reason
+            results[2]?.reason
           );
 
           setMoods([]);
@@ -237,12 +209,12 @@ export const AdminDashboardPage = () => {
         // -----------------------------------------------------
 
         if (
-          results[4]?.status === "fulfilled"
+          results[3]?.status === "fulfilled"
         ) {
 
           setReflections(
             toArray(
-              results[4].value
+              results[3].value
             )
           );
 
@@ -250,7 +222,7 @@ export const AdminDashboardPage = () => {
 
           console.error(
             "Admin reflections fetch failed:",
-            results[4]?.reason
+            results[3]?.reason
           );
 
           setReflections([]);
@@ -263,12 +235,12 @@ export const AdminDashboardPage = () => {
         // -----------------------------------------------------
 
         if (
-          results[5]?.status === "fulfilled"
+          results[4]?.status === "fulfilled"
         ) {
 
           setQuotes(
             toArray(
-              results[5].value
+              results[4].value
             )
           );
 
@@ -276,7 +248,7 @@ export const AdminDashboardPage = () => {
 
           console.error(
             "Admin quotes fetch failed:",
-            results[5]?.reason
+            results[4]?.reason
           );
 
           setQuotes([]);
@@ -289,12 +261,12 @@ export const AdminDashboardPage = () => {
         // -----------------------------------------------------
 
         if (
-          results[6]?.status === "fulfilled"
+          results[5]?.status === "fulfilled"
         ) {
 
           setArticles(
             toArray(
-              results[6].value
+              results[5].value
             )
           );
 
@@ -302,7 +274,7 @@ export const AdminDashboardPage = () => {
 
           console.error(
             "Admin articles fetch failed:",
-            results[6]?.reason
+            results[5]?.reason
           );
 
           setArticles([]);
@@ -547,24 +519,6 @@ export const AdminDashboardPage = () => {
 
       border:
         "border-l-[#5C3D2E]",
-    },
-
-
-    {
-      title:
-        "Total BloomBot Conversations",
-
-      value: isLoading
-        ? "..."
-        : conversations.length,
-
-      subtitle:
-        "Logged AI chat sessions",
-
-      icon: MessageSquare,
-
-      border:
-        "border-l-[#E07A5F]",
     },
 
 

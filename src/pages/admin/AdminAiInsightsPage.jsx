@@ -8,11 +8,6 @@ import {
   ThumbsDown,
   MessageSquare,
   Sparkles,
-  RefreshCw,
-  Cpu,
-  ShieldCheck,
-  Zap,
-  HeartHandshake,
 } from "lucide-react";
 
 
@@ -24,33 +19,8 @@ export const AdminAiInsightsPage = () => {
 
   const [insights, setInsights] = useState(null);
 
-  const [conversations, setConversations] =
-    useState([]);
-
   const [loading, setLoading] =
     useState(true);
-
-
-  // =========================================================
-  // SAFE ARRAY HELPER
-  // =========================================================
-
-  const toArray = (response) => {
-
-    if (Array.isArray(response)) {
-      return response;
-    }
-
-    if (
-      response &&
-      Array.isArray(response.data)
-    ) {
-      return response.data;
-    }
-
-    return [];
-
-  };
 
 
   // =========================================================
@@ -64,23 +34,7 @@ export const AdminAiInsightsPage = () => {
     }
 
     /*
-     * Possible backend formats:
-     *
-     * 1. Direct object
-     * {
-     *   total_conversations: 10,
-     *   helpful_responses: 8,
-     *   ...
-     * }
-     *
-     * 2. Wrapped response
-     * {
-     *   success: true,
-     *   data: {
-     *      total_conversations: 10,
-     *      ...
-     *   }
-     * }
+     * Supports both direct and wrapped backend responses.
      */
 
     if (
@@ -97,176 +51,67 @@ export const AdminAiInsightsPage = () => {
 
 
   // =========================================================
-  // LOAD AI INSIGHTS
+  // LOAD FEEDBACK INSIGHTS
   // =========================================================
 
   useEffect(() => {
-
     let isMounted = true;
 
-
     const loadAiInsights = async () => {
-
       try {
-
         setLoading(true);
 
-
-        /*
-         * Fetch both resources independently.
-         *
-         * If the insights endpoint fails, conversations
-         * can still render.
-         *
-         * If conversations fail, the AI insights can still
-         * render.
-         */
-
-        const [
-          conversationsResult,
-          insightsResult,
-        ] = await Promise.allSettled([
-
-          apiService.getConversations(),
-
-          apiService.fetchBloomBotAdminInsightsBackend(),
-
-        ]);
-
+        const result =
+          await apiService.fetchBloomBotAdminInsightsBackend();
 
         if (!isMounted) {
           return;
         }
 
-
-        // ===================================================
-        // CONVERSATIONS
-        // ===================================================
-
-        if (
-          conversationsResult.status ===
-          "fulfilled"
-        ) {
-
-          setConversations(
-            toArray(
-              conversationsResult.value
-            )
-          );
-
-        } else {
-
-          console.error(
-            "AI Insights conversations fetch failed:",
-            conversationsResult.reason
-          );
-
-          setConversations([]);
-
-        }
-
-
-        // ===================================================
-        // AI INSIGHTS
-        // ===================================================
-
-        if (
-          insightsResult.status ===
-          "fulfilled"
-        ) {
-
-          const normalized =
-            normalizeInsights(
-              insightsResult.value
-            );
-
-          setInsights(
-            normalized
-          );
-
-        } else {
-
-          console.error(
-            "BloomBot admin insights fetch failed:",
-            insightsResult.reason
-          );
-
-          setInsights(null);
-
-        }
-
+        setInsights(
+          normalizeInsights(result)
+        );
       } catch (error) {
-
         console.error(
-          "AI Insights page loading error:",
+          "BloomBot admin feedback insights fetch failed:",
           error
         );
 
         if (isMounted) {
-
-          setConversations([]);
-
           setInsights(null);
-
         }
-
       } finally {
-
         if (isMounted) {
           setLoading(false);
         }
-
       }
-
     };
 
-
     loadAiInsights();
-
 
     return () => {
       isMounted = false;
     };
-
   }, []);
 
 
   // =========================================================
-  // COMPUTED STATS
+  // COMPUTED FEEDBACK STATS
   // =========================================================
-
-  const totalSessions =
-    conversations.length;
-
-
-  const totalFeedbacks =
-    Number(
-      insights?.total_conversations || 0
-    );
-
 
   const helpfulCount =
     Number(
       insights?.helpful_responses || 0
     );
 
-
   const notHelpfulCount =
     Number(
       insights?.not_helpful_responses || 0
     );
 
-
-  const retryRequestsCount =
-    Math.round(
-      notHelpfulCount * 1.2
-    ) || 0;
-
-
   const helpfulPct =
     insights?.helpful_percentage ??
-    100.0;
-
+    0;
 
   const recentFeedbacks =
     Array.isArray(
@@ -277,64 +122,10 @@ export const AdminAiInsightsPage = () => {
 
 
   // =========================================================
-  // ESTIMATED TOKENS
-  // =========================================================
-
-  let totalWords = 0;
-
-
-  conversations.forEach(
-    (conversation) => {
-
-      if (
-        !conversation ||
-        !Array.isArray(
-          conversation.messages
-        )
-      ) {
-        return;
-      }
-
-
-      conversation.messages.forEach(
-        (message) => {
-
-          if (
-            message?.text
-          ) {
-
-            totalWords +=
-              String(
-                message.text
-              )
-                .trim()
-                .split(/\s+/)
-                .filter(Boolean)
-                .length;
-
-          }
-
-        }
-      );
-
-    }
-  );
-
-
-  const estimatedTokens =
-    Math.round(
-      totalWords * 1.3
-    );
-
-
-  // =========================================================
   // HELPER FOR FEEDBACK REASONS
   // =========================================================
 
-  const getReasonEntries = (
-    value
-  ) => {
-
+  const getReasonEntries = (value) => {
     if (
       !value ||
       typeof value !== "object" ||
@@ -343,19 +134,13 @@ export const AdminAiInsightsPage = () => {
       return [];
     }
 
-
-    return Object.entries(
-      value
-    );
-
+    return Object.entries(value);
   };
-
 
   const helpfulReasons =
     getReasonEntries(
       insights?.most_selected_helpful_reasons
     );
-
 
   const negativeReasons =
     getReasonEntries(
@@ -380,16 +165,15 @@ export const AdminAiInsightsPage = () => {
 
         <h1 className="font-serif text-3xl font-bold text-[#3B281C] dark:text-[#FFFBF7]">
 
-          AI Insights & BloomBot Performance
+          BloomBot Feedback & Insights
 
         </h1>
 
 
         <p className="text-xs text-[#705D52] dark:text-[#D4C3B3] mt-1">
 
-          Comprehensive performance evaluation, user
-          satisfaction metrics, and response quality logs
-          for BloomBot.
+          User feedback, response ratings, and areas for
+          improving BloomBot's responses.
 
         </p>
 
@@ -397,317 +181,60 @@ export const AdminAiInsightsPage = () => {
 
 
       {/* ===================================================
-          PRIMARY KPI ROW
+          FEEDBACK KPI ROW
       =================================================== */}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-
-
-        {/* TOTAL CONVERSATIONS */}
-
-        <div className="cozy-card p-5 space-y-2 border-l-4 border-l-[#5C3D2E] bg-[#FFFBF7] dark:bg-[#251E19]">
-
-          <div className="flex items-center justify-between text-xs text-[#8C7667]">
-
-            <span>
-              Total Conversations
-            </span>
-
-            <MessageSquare className="w-4 h-4 text-[#5C3D2E]" />
-
-          </div>
-
-
-          <div className="font-serif text-2xl font-bold text-[#3B281C] dark:text-[#FFFBF7]">
-
-            {loading
-              ? "..."
-              : totalSessions}
-
-          </div>
-
-
-          <div className="text-[10px] text-[#8C7667]">
-
-            Active user chats
-
-          </div>
-
-        </div>
-
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
         {/* HELPFUL */}
 
         <div className="cozy-card p-5 space-y-2 border-l-4 border-l-[#889868] bg-[#FFFBF7] dark:bg-[#251E19]">
-
           <div className="flex items-center justify-between text-xs text-[#8C7667]">
-
-            <span>
-              Helpful Responses
-            </span>
-
+            <span>Helpful Responses</span>
             <ThumbsUp className="w-4 h-4 text-[#889868]" />
-
           </div>
-
 
           <div className="font-serif text-2xl font-bold text-[#2D5A27] dark:text-[#A4C497]">
-
-            {loading
-              ? "..."
-              : helpfulCount}
-
+            {loading ? "..." : helpfulCount}
           </div>
-
 
           <div className="text-[10px] text-[#889868] font-semibold">
-
             Positive ratings
-
           </div>
-
         </div>
-
 
         {/* NOT HELPFUL */}
 
         <div className="cozy-card p-5 space-y-2 border-l-4 border-l-[#E07A5F] bg-[#FFFBF7] dark:bg-[#251E19]">
-
           <div className="flex items-center justify-between text-xs text-[#8C7667]">
-
-            <span>
-              Not Helpful Responses
-            </span>
-
+            <span>Not Helpful Responses</span>
             <ThumbsDown className="w-4 h-4 text-[#E07A5F]" />
-
           </div>
-
 
           <div className="font-serif text-2xl font-bold text-[#C46E52]">
-
-            {loading
-              ? "..."
-              : notHelpfulCount}
-
+            {loading ? "..." : notHelpfulCount}
           </div>
-
 
           <div className="text-[10px] text-[#E07A5F] font-semibold">
-
             Needs refinement
-
           </div>
-
         </div>
-
-
-        {/* RETRIES */}
-
-        <div className="cozy-card p-5 space-y-2 border-l-4 border-l-[#D4A373] bg-[#FFFBF7] dark:bg-[#251E19]">
-
-          <div className="flex items-center justify-between text-xs text-[#8C7667]">
-
-            <span>
-              Retry Requests
-            </span>
-
-            <RefreshCw className="w-4 h-4 text-[#D4A373]" />
-
-          </div>
-
-
-          <div className="font-serif text-2xl font-bold text-[#3B281C] dark:text-[#FFFBF7]">
-
-            {loading
-              ? "..."
-              : retryRequestsCount}
-
-          </div>
-
-
-          <div className="text-[10px] text-[#8C7667]">
-
-            Regenerated responses
-
-          </div>
-
-        </div>
-
 
         {/* SATISFACTION */}
 
         <div className="cozy-card p-5 space-y-2 border-l-4 border-l-[#4F5D3D] bg-[#FFFBF7] dark:bg-[#251E19]">
-
           <div className="flex items-center justify-between text-xs text-[#8C7667]">
-
-            <span>
-              Response Satisfaction %
-            </span>
-
+            <span>Response Satisfaction %</span>
             <Sparkles className="w-4 h-4 text-[#4F5D3D]" />
-
           </div>
-
 
           <div className="font-serif text-2xl font-bold text-[#2D5A27] dark:text-[#A4C497]">
-
-            {loading
-              ? "..."
-              : `${helpfulPct}%`}
-
+            {loading ? "..." : `${helpfulPct}%`}
           </div>
-
 
           <div className="text-[10px] text-[#889868] font-semibold">
-
             Overall satisfaction
-
           </div>
-
-        </div>
-
-      </div>
-
-
-      {/* ===================================================
-          TECHNICAL METRICS
-      =================================================== */}
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-
-
-        {/* TOKENS */}
-
-        <div className="cozy-card p-4 space-y-1.5 bg-[#FFFBF7] dark:bg-[#251E19] border border-[#E6DCCD] dark:border-[#3D3128]">
-
-          <div className="flex items-center justify-between text-xs text-[#8C7667]">
-
-            <span>
-              Tokens Consumed
-            </span>
-
-            <Cpu className="w-4 h-4 text-[#E07A5F]" />
-
-          </div>
-
-
-          <div className="font-serif text-xl font-bold text-[#3B281C] dark:text-[#FFFBF7]">
-
-            {loading
-              ? "..."
-              : estimatedTokens > 1000
-                ? `${(
-                    estimatedTokens / 1000
-                  ).toFixed(1)}k`
-                : estimatedTokens}
-
-          </div>
-
-
-          <div className="text-[10px] text-[#8C7667]">
-
-            Gemini 2.5 Flash
-
-          </div>
-
-        </div>
-
-
-        {/* LATENCY */}
-
-        <div className="cozy-card p-4 space-y-1.5 bg-[#FFFBF7] dark:bg-[#251E19] border border-[#E6DCCD] dark:border-[#3D3128]">
-
-          <div className="flex items-center justify-between text-xs text-[#8C7667]">
-
-            <span>
-              Avg Response Latency
-            </span>
-
-            <Zap className="w-4 h-4 text-[#D4A373]" />
-
-          </div>
-
-
-          <div className="font-serif text-xl font-bold text-[#3B281C] dark:text-[#FFFBF7]">
-
-            {loading
-              ? "..."
-              : totalSessions > 0
-                ? "380 ms"
-                : "Ready"}
-
-          </div>
-
-
-          <div className="text-[10px] text-[#889868]">
-
-            Low latency streaming
-
-          </div>
-
-        </div>
-
-
-        {/* EMPATHY */}
-
-        <div className="cozy-card p-4 space-y-1.5 bg-[#FFFBF7] dark:bg-[#251E19] border border-[#E6DCCD] dark:border-[#3D3128]">
-
-          <div className="flex items-center justify-between text-xs text-[#8C7667]">
-
-            <span>
-              Empathy Grounding
-            </span>
-
-            <HeartHandshake className="w-4 h-4 text-[#889868]" />
-
-          </div>
-
-
-          <div className="font-serif text-xl font-bold text-[#3B281C] dark:text-[#FFFBF7]">
-
-            100%
-
-          </div>
-
-
-          <div className="text-[10px] text-[#889868]">
-
-            Warm & empathetic
-
-          </div>
-
-        </div>
-
-
-        {/* SAFETY */}
-
-        <div className="cozy-card p-4 space-y-1.5 bg-[#FFFBF7] dark:bg-[#251E19] border border-[#E6DCCD] dark:border-[#3D3128]">
-
-          <div className="flex items-center justify-between text-xs text-[#8C7667]">
-
-            <span>
-              Safety Pass Rate
-            </span>
-
-            <ShieldCheck className="w-4 h-4 text-[#4F5D3D]" />
-
-          </div>
-
-
-          <div className="font-serif text-xl font-bold text-[#3B281C] dark:text-[#FFFBF7]">
-
-            100%
-
-          </div>
-
-
-          <div className="text-[10px] text-[#889868]">
-
-            Crisis & safety verified
-
-          </div>
-
         </div>
 
       </div>
@@ -1063,14 +590,13 @@ export const AdminAiInsightsPage = () => {
       =================================================== */}
 
       {!loading &&
-        totalSessions === 0 &&
         !insights && (
 
           <div className="cozy-card p-5 text-center">
 
             <p className="text-xs text-[#8C7667]">
 
-              AI insight data is currently unavailable.
+              Feedback insight data is currently unavailable.
               The dashboard is still operational.
 
             </p>

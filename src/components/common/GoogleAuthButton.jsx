@@ -25,20 +25,20 @@ export const GoogleIcon = ({ className = "w-5 h-5" }) => (
 
 export const GoogleAuthButton = ({
   mode = "login",
+  adminCode = "",
   onAuthSuccess,
 }) => {
   const { loginWithGoogleToken, addToast } = useAuth();
   const navigate = useNavigate();
 
+  const isAdmin = mode === "admin";
+
   const [loading, setLoading] = useState(false);
   const [scriptLoaded, setScriptLoaded] = useState(false);
 
-  // Admin-only invitation code
-  const [adminCode, setAdminCode] = useState("");
-
+  
   const googleButtonContainerRef = useRef(null);
 
-  const isAdmin = mode === "admin";
 
   const googleClientId =
     import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
@@ -167,62 +167,51 @@ export const GoogleAuthButton = ({
   // =========================================================
 
   useEffect(() => {
-    if (
-      !scriptLoaded ||
-      !window.google?.accounts?.id
-    ) {
-      return;
-    }
+  if (
+    !scriptLoaded ||
+    !window.google?.accounts?.id
+  ) {
+    return;
+  }
 
-    if (!googleClientId) {
-      console.warn(
-        "VITE_GOOGLE_CLIENT_ID is missing or empty."
-      );
+  if (!googleClientId) {
+    console.warn(
+      "VITE_GOOGLE_CLIENT_ID is missing or empty."
+    );
+    return;
+  }
 
-      return;
-    }
-
-    try {
-      google.accounts.id.initialize({
-    client_id: googleClientId,
-    callback: handleCredentialResponse,
-    auto_select: false,
-    use_fedcm_for_button: false,
+  try {
+    window.google.accounts.id.initialize({
+      client_id: googleClientId,
+      callback: handleCredentialResponse,
+      auto_select: false,
+      use_fedcm_for_button: false,
     });
 
-      if (
-        googleButtonContainerRef.current
-      ) {
-        googleButtonContainerRef.current.innerHTML =
-          "";
+    if (googleButtonContainerRef.current) {
+      googleButtonContainerRef.current.innerHTML = "";
 
-        window.google.accounts.id.renderButton(
-          googleButtonContainerRef.current,
-          {
-            theme: "outline",
-            size: "large",
-            type: "standard",
-            text: "continue_with",
-            shape: "rectangular",
-            width: 400,
-            logo_alignment: "left",
-          }
-        );
-      }
-
-    } catch (err) {
-      console.error(
-        "Failed to initialize or render Google Sign-In button:",
-        err
+      window.google.accounts.id.renderButton(
+        googleButtonContainerRef.current,
+        {
+          theme: "outline",
+          size: "large",
+          type: "standard",
+          text: "continue_with",
+          shape: "rectangular",
+          width: "100%",
+          logo_alignment: "left",
+        }
       );
     }
-
-  }, [
-    scriptLoaded,
-    googleClientId,
-    isAdmin,
-    adminCode,
-  ]);
+  } catch (err) {
+    console.error(
+      "Failed to initialize or render Google Sign-In button:",
+      err
+    );
+  }
+}, [scriptLoaded, googleClientId]);
 
   // =========================================================
   // FALLBACK GOOGLE PROMPT
@@ -294,38 +283,7 @@ export const GoogleAuthButton = ({
   return (
     <div className="w-full my-3">
 
-      {/* ---------------------------------------------------
-          ADMIN INVITATION CODE
-          Only shown in admin mode
-      --------------------------------------------------- */}
-
-      {isAdmin && (
-        <div className="mb-4 p-4 rounded-2xl bg-[#FAF6F0] border border-[#E6DCCD] space-y-2">
-
-          <label className="block text-xs font-semibold text-[#5C3D2E]">
-            Admin Invitation Code
-          </label>
-
-          <input
-            type="password"
-            value={adminCode}
-            onChange={(e) =>
-              setAdminCode(e.target.value)
-            }
-            placeholder="Enter admin invitation code"
-            disabled={loading}
-            className="cozy-input w-full"
-          />
-
-          <p className="text-[10px] leading-relaxed text-[#8C7667]">
-            First-time administrators only.
-            Your Google account will be registered
-            as a MindBloom administrator after
-            successful verification.
-          </p>
-
-        </div>
-      )}
+     
 
       {/* ---------------------------------------------------
           DIVIDER

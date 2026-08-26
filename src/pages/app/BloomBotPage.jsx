@@ -442,18 +442,29 @@ export const BloomBotPage = () => {
         text: m.text
       }));
 
-      const res = await apiService.regenerateMessageBackend(trimmedText, historyContext);
-      const botReplyText = res.response || res.reply || "I am right here with you. Take a soft, gentle breath.";
+      const res = await apiService.regenerateMessageBackend(
+  trimmedText,
+  historyContext
+);
 
-      const botMsg = {
-        id: `b-${Date.now()}`,
-        sender: "bot",
-        text: botReplyText,
-        userPrompt: trimmedText,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      };
+if (!res.success || !res.reply) {
+  throw new Error(
+    res.message || "BloomBot couldn't regenerate the response."
+  );
+}
 
-      setMessages((prev) => [...prev, botMsg]);
+const botMsg = {
+  id: `b-${Date.now()}`,
+  sender: "bot",
+  text: res.reply,
+  userPrompt: trimmedText,
+  timestamp: new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit"
+  })
+};
+
+setMessages((prev) => [...prev, botMsg]);
     } catch (err) {
       console.error("Error regenerating reply after message edit:", err);
       const errorMsg = {
@@ -509,13 +520,13 @@ export const BloomBotPage = () => {
     if (!activeFeedbackModal) return;
     setSubmittingFeedback(true);
     try {
-      const result = await apiService.submitBloomBotFeedbackBackend(
-        activeFeedbackModal.userPrompt,
-        activeFeedbackModal.aiResponse,
-        activeFeedbackModal.feedbackType,
-        selectedReasons,
-        optionalComment
-      );
+      const result = await apiService.submitBloomBotFeedbackBackend({
+  user_prompt: activeFeedbackModal.userPrompt,
+  ai_response: activeFeedbackModal.aiResponse,
+  feedback_type: activeFeedbackModal.feedbackType,
+  selected_reasons: selectedReasons,
+  optional_comment: optionalComment,
+});
 
       setFeedbackStatus((prev) => ({
         ...prev,

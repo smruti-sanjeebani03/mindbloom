@@ -407,7 +407,10 @@ class AdminUserListView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        users = User.objects.all().order_by('-date_joined')
+        users = users = User.objects.filter(
+        is_staff=False,
+        is_superuser=False
+        ).order_by("-date_joined")
         data = []
         for u in users:
             profile = getattr(u, 'userprofile', None)

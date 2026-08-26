@@ -18,22 +18,31 @@ export const LoginPage = () => {
   const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-    const cleanEmail = email.trim();
+  e.preventDefault();
+  setError("");
 
-    const result = await loginUser(cleanEmail, password);
-    if (!result || !result.success) {
-      setError(result?.message || "Login failed. Please check your credentials and try again.");
-      return;
-    }
+  const cleanEmail = email.trim();
 
-    if (result.user?.is_staff || result.user?.is_superuser || result.user?.role === "admin") {
-      navigate("/admin/dashboard", { replace: true });
-    } else {
-      navigate(returnPath || "/app", { replace: true });
-    }
-  };
+  const result = await loginUser(cleanEmail, password);
+
+  if (!result || !result.success) {
+    setError(
+      result?.message ||
+      "Login failed. Please check your credentials and try again."
+    );
+    return;
+  }
+
+  if (
+    result.user?.is_staff ||
+    result.user?.is_superuser ||
+    result.user?.role === "admin"
+  ) {
+    navigate("/admin/dashboard", { replace: true });
+  } else {
+    navigate(returnPath || "/app", { replace: true });
+  }
+};
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
@@ -176,14 +185,28 @@ export const RegisterPage = () => {
     }
 
     setError("");
-    const cleanName = name.trim() || (email.includes("@") ? email.split("@")[0] : "Member");
-    const result = await registerUser(email.trim(), cleanName, password);
-    if (!result || !result.success) {
-      setError(result?.message || "Registration failed. Please check your details and try again.");
-      return;
-    }
-    navigate(returnPath, { replace: true });
-  };
+
+const cleanEmail = email.trim();
+
+const result = await loginUser(cleanEmail, password);
+
+if (!result || !result.success) {
+  setError(
+    result?.message ||
+    "Login failed. Please check your credentials and try again."
+  );
+  return;
+}
+
+if (
+  result.user?.is_staff ||
+  result.user?.is_superuser ||
+  result.user?.role === "admin"
+) {
+  navigate("/admin/dashboard", { replace: true });
+} else {
+  navigate(returnPath || "/app", { replace: true });
+} }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">

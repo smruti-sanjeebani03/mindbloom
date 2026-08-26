@@ -1,5 +1,15 @@
 import { useState, useEffect } from "react";
-import { Check, Lock, ShieldCheck, Mail, Globe, Wrench, UserCheck } from "lucide-react";
+import {
+  Check,
+  Lock,
+  ShieldCheck,
+  Mail,
+  Globe,
+  Wrench,
+  UserCheck,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { apiService } from "../../services/apiService";
 
@@ -8,12 +18,18 @@ export const AdminSettingsPage = () => {
   const [appName, setAppName] = useState("MindBloom");
   const [contactEmail, setContactEmail] = useState("support@mindbloom.app");
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [aiModel, setAiModel] = useState("Gemini 2.5 Flash");
-  const [safetyThreshold, setSafetyThreshold] = useState("Strict (High Sensitivity)");
+  const [aiModel, setAiModel] = useState("gemini-3.6-flash");
+  const [safetyThreshold, setSafetyThreshold] = useState(
+    "Strict (High Sensitivity)",
+  );
 
   const handleSave = (e) => {
     e.preventDefault();
-    addToast("Admin Settings Saved ⚙️", "Platform parameters and system settings updated.", "success");
+    addToast(
+      "Admin Settings Saved ⚙️",
+      "Platform parameters and system settings updated.",
+      "success",
+    );
   };
 
   return (
@@ -23,7 +39,8 @@ export const AdminSettingsPage = () => {
           Admin Settings
         </h1>
         <p className="text-xs text-[#705D52] dark:text-[#D4C3B3] mt-1">
-          Configure application parameters, contact details, maintenance mode, and AI model endpoints.
+          Configure application parameters, contact details, maintenance mode,
+          and AI model endpoints.
         </p>
       </div>
 
@@ -74,7 +91,9 @@ export const AdminSettingsPage = () => {
               type="button"
               onClick={() => setMaintenanceMode(!maintenanceMode)}
               className={`w-12 h-6 rounded-full p-1 transition duration-200 ease-in-out ${
-                maintenanceMode ? "bg-[#E07A5F]" : "bg-[#E6DCCD] dark:bg-[#3D3128]"
+                maintenanceMode
+                  ? "bg-[#E07A5F]"
+                  : "bg-[#E6DCCD] dark:bg-[#3D3128]"
               }`}
             >
               <div
@@ -102,8 +121,9 @@ export const AdminSettingsPage = () => {
               onChange={(e) => setAiModel(e.target.value)}
               className="cozy-input w-full text-xs bg-white dark:bg-[#2F2620]"
             >
-              <option value="Gemini 2.5 Flash">Gemini 2.5 Flash (Optimized for Low Latency)</option>
-              <option value="Gemini 2.5 Pro">Gemini 2.5 Pro (Deep Research & Complex Empathetic Dialogue)</option>
+              <option value="gemini-3.6-flash">
+                Gemini 3.6 Flash (Optimized for Low Latency)
+              </option>
             </select>
           </div>
 
@@ -116,13 +136,18 @@ export const AdminSettingsPage = () => {
               onChange={(e) => setSafetyThreshold(e.target.value)}
               className="cozy-input w-full text-xs bg-white dark:bg-[#2F2620]"
             >
-              <option value="Strict (High Sensitivity)">Strict (High Sensitivity - Instant Crisis Referral)</option>
+              <option value="Strict (High Sensitivity)">
+                Strict (High Sensitivity - Instant Crisis Referral)
+              </option>
               <option value="Moderate">Moderate (Standard Safety Rules)</option>
             </select>
           </div>
         </div>
 
-        <button type="submit" className="cozy-btn-primary text-xs py-2.5 px-5 flex items-center gap-2">
+        <button
+          type="submit"
+          className="cozy-btn-primary text-xs py-2.5 px-5 flex items-center gap-2"
+        >
           <Check className="w-4 h-4" />
           <span>Save Admin Settings</span>
         </button>
@@ -136,11 +161,18 @@ export const AdminProfilePage = () => {
   const [profile, setProfile] = useState(apiService.getAdminProfile());
   const [isEditing, setIsEditing] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Form states
   const [name, setName] = useState(profile.name || "Shree Sanjeebani");
-  const [email, setEmail] = useState(profile.email || "smrutisanjeebani0310@gmail.com");
-  const [title, setTitle] = useState(profile.title || "Head of Operations & Administration");
+  const [email, setEmail] = useState(
+    profile.email || "smrutisanjeebani0310@gmail.com",
+  );
+  const [title, setTitle] = useState(
+    profile.title || "Head of Operations & Administration",
+  );
 
   // Password modal states
   const [currentPassword, setCurrentPassword] = useState("");
@@ -152,11 +184,15 @@ export const AdminProfilePage = () => {
     const updated = apiService.updateAdminProfile({
       name: name.trim(),
       email: email.trim(),
-      title: title.trim()
+      title: title.trim(),
     });
     setProfile(updated);
     setIsEditing(false);
-    addToast("Profile Updated ✨", "Admin profile details saved successfully", "success");
+    addToast(
+      "Profile Updated ✨",
+      "Admin profile details saved successfully",
+      "success",
+    );
   };
 
   const handleChangePassword = (e) => {
@@ -166,11 +202,19 @@ export const AdminProfilePage = () => {
       return;
     }
     if (newPassword.length < 4) {
-      addToast("Weak Password", "Password must be at least 4 characters long.", "warning");
+      addToast(
+        "Weak Password",
+        "Password must be at least 4 characters long.",
+        "warning",
+      );
       return;
     }
 
-    addToast("Password Changed 🔐", "Admin security password updated successfully.", "success");
+    addToast(
+      "Password Changed 🔐",
+      "Admin security password updated successfully.",
+      "success",
+    );
     setIsPasswordModalOpen(false);
     setCurrentPassword("");
     setNewPassword("");
@@ -189,7 +233,8 @@ export const AdminProfilePage = () => {
             Admin Profile
           </h1>
           <p className="text-xs text-[#705D52] dark:text-[#D4C3B3] mt-1">
-            Administrator identity, security credentials, and management authorization.
+            Administrator identity, security credentials, and management
+            authorization.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -232,13 +277,20 @@ export const AdminProfilePage = () => {
                 {profile.role || "Administrator"}
               </span>
             </div>
-            <p className="text-xs text-[#705D52] dark:text-[#D4C3B3] font-medium">{profile.title}</p>
-            <p className="text-xs text-[#8C7667]">{profile.email} • Root Privileges</p>
+            <p className="text-xs text-[#705D52] dark:text-[#D4C3B3] font-medium">
+              {profile.title}
+            </p>
+            <p className="text-xs text-[#8C7667]">
+              {profile.email} • Root Privileges
+            </p>
           </div>
         </div>
 
         {isEditing ? (
-          <form onSubmit={handleSaveProfile} className="pt-4 border-t border-[#EFE6DC] dark:border-[#3D3128] space-y-4">
+          <form
+            onSubmit={handleSaveProfile}
+            className="pt-4 border-t border-[#EFE6DC] dark:border-[#3D3128] space-y-4"
+          >
             <h4 className="font-serif font-bold text-sm text-[#3B281C] dark:text-[#FFFBF7]">
               Update Administrator Details
             </h4>
@@ -290,7 +342,10 @@ export const AdminProfilePage = () => {
               >
                 Cancel
               </button>
-              <button type="submit" className="cozy-btn-primary text-xs px-5 py-2">
+              <button
+                type="submit"
+                className="cozy-btn-primary text-xs px-5 py-2"
+              >
                 Save Changes
               </button>
             </div>
@@ -301,13 +356,17 @@ export const AdminProfilePage = () => {
               <span className="text-[10px] text-[#8C7667] uppercase tracking-wider block font-semibold">
                 Security Access
               </span>
-              <span className="font-bold text-[#3B281C] dark:text-[#FFFBF7]">Full Management Portal</span>
+              <span className="font-bold text-[#3B281C] dark:text-[#FFFBF7]">
+                Full Management Portal
+              </span>
             </div>
             <div className="p-3 rounded-xl bg-[#FAF6F0] dark:bg-[#2F2620] border border-[#E6DCCD] dark:border-[#3D3128]">
               <span className="text-[10px] text-[#8C7667] uppercase tracking-wider block font-semibold">
                 Account Status
               </span>
-              <span className="font-bold text-[#889868]">Active & Verified</span>
+              <span className="font-bold text-[#889868]">
+                Active & Verified
+              </span>
             </div>
             <div className="p-3 rounded-xl bg-[#FAF6F0] dark:bg-[#2F2620] border border-[#E6DCCD] dark:border-[#3D3128]">
               <span className="text-[10px] text-[#8C7667] uppercase tracking-wider block font-semibold">
@@ -337,42 +396,147 @@ export const AdminProfilePage = () => {
                 <label className="block font-semibold text-[#5C3D2E] dark:text-[#D4C3B3] mb-1">
                   Current Password
                 </label>
-                <input
-                  type="password"
-                  required
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="cozy-input w-full"
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+
+                  <input
+
+                    type={showCurrentPassword ? "text" : "password"}
+
+                    required
+
+                    value={currentPassword}
+
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+
+                    className="cozy-input w-full !pr-10"
+
+                    placeholder="••••••••"
+
+                  />
+
+                  <button
+
+                    type="button"
+
+                    onClick={() => setShowCurrentPassword((prev) => !prev)}
+
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C7667] hover:text-[#5C3D2E] transition"
+
+                    aria-label={showCurrentPassword ? "Hide current password" : "Show current password"}
+
+                  >
+
+                    {showCurrentPassword ? (
+
+                      <EyeOff className="w-4 h-4" />
+
+                    ) : (
+
+                      <Eye className="w-4 h-4" />
+
+                    )}
+
+                  </button>
+
+                </div>
               </div>
 
               <div>
                 <label className="block font-semibold text-[#5C3D2E] dark:text-[#D4C3B3] mb-1">
                   New Password
                 </label>
-                <input
-                  type="password"
-                  required
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="cozy-input w-full"
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+
+                  <input
+
+                    type={showNewPassword ? "text" : "password"}
+
+                    required
+
+                    value={newPassword}
+
+                    onChange={(e) => setNewPassword(e.target.value)}
+
+                    className="cozy-input w-full !pr-10"
+
+                    placeholder="••••••••"
+
+                  />
+
+                  <button
+
+                    type="button"
+
+                    onClick={() => setShowNewPassword((prev) => !prev)}
+
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C7667] hover:text-[#5C3D2E] transition"
+
+                    aria-label={showNewPassword ? "Hide new password" : "Show new password"}
+
+                  >
+
+                    {showNewPassword ? (
+
+                      <EyeOff className="w-4 h-4" />
+
+                    ) : (
+
+                      <Eye className="w-4 h-4" />
+
+                    )}
+
+                  </button>
+
+                </div>
               </div>
 
               <div>
                 <label className="block font-semibold text-[#5C3D2E] dark:text-[#D4C3B3] mb-1">
                   Confirm New Password
                 </label>
-                <input
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="cozy-input w-full"
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+
+                  <input
+
+                    type={showConfirmPassword ? "text" : "password"}
+
+                    required
+
+                    value={confirmPassword}
+
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+
+                    className="cozy-input w-full !pr-10"
+
+                    placeholder="••••••••"
+
+                  />
+
+                  <button
+
+                    type="button"
+
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C7667] hover:text-[#5C3D2E] transition"
+
+                    aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+
+                  >
+
+                    {showConfirmPassword ? (
+
+                      <EyeOff className="w-4 h-4" />
+
+                    ) : (
+
+                      <Eye className="w-4 h-4" />
+
+                    )}
+
+                  </button>
+
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#E6DCCD] dark:border-[#3D3128]">
@@ -383,7 +547,10 @@ export const AdminProfilePage = () => {
                 >
                   Cancel
                 </button>
-                <button type="submit" className="cozy-btn-primary text-xs px-5 py-2">
+                <button
+                  type="submit"
+                  className="cozy-btn-primary text-xs px-5 py-2"
+                >
                   Update Password
                 </button>
               </div>

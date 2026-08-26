@@ -418,7 +418,6 @@ def reset_password_with_token(token: str, new_password: str, confirm_password: s
 
     return user
 
-
 def authenticate_google_user(id_token_str: str, admin_code: str = "") -> dict:
     """
     Authenticate a user through Google OAuth.
@@ -632,9 +631,170 @@ def authenticate_google_user(id_token_str: str, admin_code: str = "") -> dict:
                     if profile.subscription_expiry
                     else None,
 
-                # ⭐ IMPORTANT
                 "is_staff": user.is_staff,
                 "is_superuser": user.is_superuser,
             }
         }
 
+def authenticate_admin_user(
+    name: str,
+    email: str,
+    password: str,
+    admin_code: str = ""
+) -> dict:
+    """
+    Authenticate or register a MindBloom administrator using:
+    - Administrator name
+    - Email
+    - Password
+    - Admin invitation code
+
+    Existing staff/superuser accounts can log in directly.
+    Existing normal users can become administrators with a valid code.
+    New users can create an administrator account with a valid code.
+    """
+
+    clean_name = (name or "").strip()
+    clean_email = (email or "").strip().lower()
+    clean_admin_code = (admin_code or "").strip()
+
+    if not clean_name:
+        raise ValidationError({
+            "name": ["Administrator name is required."]
+        })
+
+    if not clean_email:
+        raise ValidationError({
+            "email": ["Admin email is required."]
+        })
+
+    if not password:
+        raise ValidationError({
+            "password": ["Security password is required."]
+        })
+
+    # ---------------------------------------------------------
+    # ADMIN INVITATION CODE
+    # ---------------------------------------------------------
+
+    configured_admin_code = getattr(
+        settings,
+        "MINDBLOOM_ADMIN_INVITE_CODE",
+        ""
+    )
+
+    valid_invite = (
+        bool(clean_admin_code)
+        and bool(configured_admin_code)
+        and clean_admin_code == configured_admin_code
+    )
+
+    # ---------------------------------------------------------
+    # FIND EXISTING ACCOUNT
+    # ---------------------------------------------------------
+
+    try:
+        user = User.objects.get(email__iexact=clean_email)
+
+        # -----------------------------------------------------
+        # EXISTING USER → VERIFY PASSWORD
+        # -----------------------------------------------------
+
+        if not user.check_password(password):
+            raise ValidationError({
+                "non_field_errors": [
+                    "Invalid admin credentials."
+                ]
+            })
+
+        if not user.is_active:
+            raise ValidationError({
+                "non_field_errors": [
+                    "This account is inactive."
+                ]
+            })
+
+        already_admin = (
+            user.is_staff or
+            user.is_superuser
+        )
+
+        # Existing admin can log in without invitation code.
+        if not already_admin and not valid_invite:
+            raise ValidationError({
+                "non_field_errors": [
+                    "Administrator privileges are required. "
+                    "Use the valid MindBloom administrator invitation code."
+                ]
+            })
+
+        # Promote existing user if valid invitation code was supplied.
+        if valid_invite and not user.is_staff:
+            user.is_staff = True
+
+    except User.DoesNotExist:
+
+        # -----------------------------------------------------
+        # NEW USER → ADMIN CODE IS REQUIRED
+        # -----------------------------------------------------
+
+        if not valid_invite:
+            raise ValidationError({
+                "non_field_errors": [
+                    "A valid MindBloom administrator invitation code "
+                    "is required to create a new administrator account."
+                ]
+            })
+
+        # -----------------------------------------------------
+        # CREATE NEW ADMINISTRATOR
+        # -----------------------------------------------------
+
+        user = User.objects.create_user(
+            username=clean_email,
+            email=clean_email,
+            password=password,
+            first_name=clean_name,
+            is_staff=True,
+            is_active=True,
+        )
+
+    # ---------------------------------------------------------
+    # STORE ADMINISTRATOR PROFILE
+    # ---------------------------------------------------------
+
+    profile, _ = UserProfile.objects.get_or_create(
+        user=user
+    )
+
+    profile.full_name = clean_name
+    user.first_name = clean_name
+
+    user.save(
+        update_fields=[
+            "first_name",
+            "is_staff",
+        ]
+    )
+
+    profile.save()
+
+    # ---------------------------------------------------------
+    # JWT
+    # ---------------------------------------------------------
+
+    refresh = RefreshToken.for_user(user)
+
+    return {
+        "access_token": str(refresh.access_token),
+        "refresh_token": str(refresh),
+
+        "user": {
+            "id": user.id,
+            "full_name": profile.full_name or clean_name,
+            "email": user.email,
+            "date_joined": user.date_joined,
+            "is_staff": user.is_staff,
+            "is_superuser": user.is_superuser,
+        }
+    }
